@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="shortcut icon" href="./favicon.ico" />
+</head>
+
+<body>
+    <div id="container">
+        <div class="game-container">
+            <div id="game" class=""></div>
+            <div id="overlayGameOver" class="overlay">
+                <div>
+                    <button type="button" class="re-play-btn" onclick="refreshPage()">Chơi lại</button>
+                    <br />
+                    Bạn đã thua cuộc
+                </div>
+            </div>
+            <div id="overlayPause" class="overlay">
+                <div>
+                    Nhấn phím di chuyển bất kì để tiếp tục.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="info-container">
+        <div class="info">
+            <div class="flex w-400">
+                <div id="score" class="score"></div>
+                <div id="highestScore" class="score"></div>
+            </div>
+
+            <div class="options flex w-400">
+                <label>
+                    <input type="checkbox" class="nes-checkbox" id="killBoxCheckbox" onchange="toggleKillBox()" />
+                    <span>Hộp</span>
+                </label>
+
+                <div class="modes">
+                    <span>Độ khó:</span>
+                    <select id="selectMode">
+                        <option value="7" selected>Dễ</option>
+                        <option value="12">Trung bình</option>
+                        <option value="25">Khó</option>
+                    </select>
+                </div>
+
+            </div>
+            <div class="mt-30">
+                <button type="button" class="rule-btn js-rule">Luật chơi</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal js-modal">
+        <div class="modal-container js-modal-container">
+            <header class="modal-header">
+                Luật chơi Rắn săn mồi
+            </header>
+
+            <div class="modal-body">
+                <p>Trò chơi Rắn săn mồi với giao diện và lối chơi đơn giản, trò chơi cổ điển này là sự lựa
+                    chọn hoàn hảo để giết thời gian.</p>
+
+                <p class="mb-15">Để chơi Trò chơi Rắn săn mồi, hãy sử dụng các phím mũi tên để điều khiển con
+                    rắn của bạn đi đúng hướng và ăn thành công các viên ngọc trên đường đi.
+                    Giữ con rắn không va vào tường hoặc ăn cơ thể của nó của chính nó. Khi thua, màn hình
+                    sẽ hiển thị thông báo và điểm số của bạn. Bên cạnh đó có các chức năng như sau:</p>
+                <ul class="mt-0">
+                    <li>Hộp: Nếu chọn thì khi rắn va vào tường sẽ bị chết.</li>
+                    <li>Độ khó: được chia thành các độ khó như dễ, trung bình và khó.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script src="./snake.js"></script>
+</html>
+<!-- Trang web tham khảo: https://snake-game.io/ -->
