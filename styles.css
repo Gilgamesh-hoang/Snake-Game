@@ -1,266 +1,214 @@
 .mt-30 {
-    margin-top: 30px;
+  margin-top: 30px;
 }
 
 .mt-0 {
-    margin-top: 0px;
+  margin-top: 0px;
 }
 
 .mb-15 {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .w-400 {
-    width: 400px;
-}
-
-body {
-    background-color: lightgreen;
-    font-family: 'Press Start 2P', cursive;
-    font-weight: 600;
-}
-
-#container {
-    position: relative;
-    display: flex;
-    justify-content: center;
+  width: 400px;
 }
 
 .flex {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-
-.heading {
-    margin-top: 1rem;
+body {
+  background-color: lightgreen;
+  font-family: "Press Start 2P", cursive;
+  font-weight: 600;
 }
 
-.options {
-    margin-top: 1rem;
+#container {
+  position: relative;
+  display: flex;
+  justify-content: center;
 }
-
-.modes {
-    display: inline-block;
+#container .game-container {
+  position: relative;
+  margin-top: 2rem;
 }
-
-#selectMode {
-    font-size: 16px;
+#container .game-container #game {
+  background-color: #f5f5dc;
+  text-align: center;
+  display: grid;
+  border-radius: 5px;
+  border: 5px solid transparent;
 }
-
-#game {
-    background-color: #f5f5dc;
-    text-align: center;
-    display: grid;
-    border-radius: 5px;
-    border: 5px solid transparent;
+#container .game-container #game.kill-box {
+  border: 5px solid #fbb0b0;
 }
-
-#game.killbox {
-    border: 5px solid #fbb0b0;
+#container .game-container #game [paused=true] .snake {
+  animation: flickerAnimation 0.5s infinite;
 }
-
-.game-container {
-    position: relative;
-    margin-top: 2rem;
+#container .game-container #game cell {
+  height: 15px;
+  width: 15px;
+}
+#container .game-container #game cell.snake {
+  background-color: #3d3d3d;
+  border-radius: 3px;
+}
+#container .game-container #game cell.snake.eatGem {
+  background-color: gold;
+  border: 2px solid black;
+  border-radius: 3px;
+}
+#container .game-container #game cell.snake.head {
+  background-color: #28210c;
+  border-radius: 7px;
+}
+#container .game-container #game cell.snake.tail {
+  background-color: rgba(61, 61, 61, 0.8);
+}
+#container .game-container #game cell.gem {
+  background-color: #b60b0b;
+  border-radius: 7px;
+  border: 2px solid black;
+  animation: gemAnimation 0.5s infinite;
+}
+#container .game-container .rePlay-btn {
+  font-size: 20px;
+  font-weight: bold;
+  padding: 5px 15px;
+  font-family: "Press Start 2P", cursive;
+  border-radius: 10px;
+  transition: background-color 0.5s ease;
+}
+#container .game-container:hover {
+  color: #fff;
+  background-color: #255987;
 }
 
 .overlay {
-    position: absolute;
-    top: 0;
-    display: none;
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
-    width: 100%;
-    height: 100%;
-    z-index: 10;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
-    font-size: 2rem;
-    color: white;
-}
-
-cell {
-    height: 15px;
-    width: 15px;
-}
-
-cell.snake {
-    background-color: #3d3d3d;
-    border-radius: 3px;
-}
-
-cell.snake.eatGem {
-    background-color: gold;
-    border: 2px solid black;
-    border-radius: 3px;
-}
-
-#game[paused="true"] cell.snake {
-    animation: flickerAnimation .5s infinite;
-}
-
-@keyframes flickerAnimation {
-    0% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.2;
-    }
-
-    100% {
-        opacity: 1;
-    }
-}
-
-cell.snake.head {
-    background-color: #28210c;
-    border-radius: 7px;
-}
-
-cell.snake.tail {
-    background-color: #3d3d3dcc;
-}
-
-cell.gem {
-    background-color: #b60b0b;
-    border-radius: 7px;
-    border: 2px solid black;
-    animation: gemAnimation .5s infinite;
-}
-
-@keyframes gemAnimation {
-    0% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.7;
-    }
-
-    100% {
-        opacity: 1;
-    }
+  position: absolute;
+  top: 0;
+  display: none;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  color: white;
 }
 
 .info-container {
-    display: flex;
-    margin-top: 1rem;
-    justify-content: center;
-    font-size: 1.2rem;
+  display: flex;
+  margin-top: 1rem;
+  justify-content: center;
+  font-size: 1.2rem;
 }
-
-.info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+.info-container .info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
-#score {
-    padding-top: 1rem;
-    color: #b60b0b;
+.info-container .info #score,
+.info-container .info .score {
+  padding-top: 1rem;
+  color: #b60b0b;
 }
-
-.score {
-    padding-top: 1rem;
-    color: #b60b0b;
+.info-container .info .options {
+  margin-top: 1rem;
 }
-
-
-.rule-btn {
-    background: #0e4769;
-    color: white;
-    font-size: 25px;
-    font-weight: 600;
-    padding: 10px 20px;
-    border-radius: 30px;
-    cursor: pointer;
-    font-family: 'Press Start 2P', cursive;
-    transition: opacity 0.3s ease;
+.info-container .info .options .modes {
+  display: inline-block;
 }
-
-.rule-btn:hover {
-    opacity: 0.8;
+.info-container .info .options .modes #selectMode {
+  font-size: 16px;
 }
-
-.re-play-btn {
-    font-size: 20px;
-    font-weight: bold;
-    padding: 5px 15px;
-    font-family: 'Press Start 2P', cursive;
-    border-radius: 10px;
-    transition: background-color 0.5s ease;
+.info-container .info .rule-btn {
+  background: #0e4769;
+  color: white;
+  font-size: 25px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-family: "Press Start 2P", cursive;
+  transition: opacity 0.3s ease;
 }
-
-.re-play-btn:hover {
-    color: #fff;
-    background-color: #255987;
+.info-container .info .rule-btn:hover {
+  opacity: 0.8;
 }
 
 .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: rgba(0, 0, 0, 0.4);
-    display: none;
-    align-items: center;
-    justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
 }
-
-.modal-container {
-    background-color: #fff;
-    width: 900px;
-    min-height: 200px;
-    position: relative;
-    animation: modalFadeIn ease 0.4s;
-}
-
-.modal-header {
-    background-color: #009688;
-    font-size: 30px;
-    color: #fff;
-    height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    letter-spacing: 5px;
-}
-
-.modal-close {
-    position: absolute;
-    right: 0;
-    top: 0;
-    padding: 16px 15px;
-    color: #fff;
-}
-
-.modal-close:hover {
-    color: #000;
-    background-color: #f44336;
-}
-
-.modal-body {
-    padding: 16px;
-    font-size: 22px;
-}
-
 .modal.open {
-    display: flex;
+  display: flex;
+}
+.modal .modal-container {
+  background-color: #fff;
+  width: 900px;
+  min-height: 200px;
+  position: relative;
+  animation: modalFadeIn ease 0.4s;
+}
+.modal .modal-container .modal-header {
+  background-color: #009688;
+  font-size: 30px;
+  color: #fff;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 5px;
+}
+.modal .modal-container .modal-body {
+  padding: 16px;
+  font-size: 22px;
 }
 
 @keyframes modalFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-100px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+@keyframes flickerAnimation {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes gemAnimation {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}/*# sourceMappingURL=styles.css.map */

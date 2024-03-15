@@ -453,9 +453,9 @@ const toggleKillBox = () => {
     // Thay đổi lớp CSS của phần tử game tùy thuộc vào trạng thái của checkbox
     const gameElement = document.getElementById('game');
     if (isChecked) {
-        gameElement.classList.add('killbox');
+        gameElement.classList.add('kill-box');
     } else {
-        gameElement.classList.remove('killbox');
+        gameElement.classList.remove('kill-box');
     }
 };
 

@@ -5,17 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snake Game</title>
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./styles2.css">
     <link rel="shortcut icon" href="./favicon.ico" />
 </head>
-
 <body>
     <div id="container">
         <div class="game-container">
-            <div id="game" class=""></div>
+            <div id="game"></div>
             <div id="overlayGameOver" class="overlay">
                 <div>
-                    <button type="button" class="re-play-btn" onclick="refreshPage()">Chơi lại</button>
+                    <button type="button" class="rePlay-btn" onclick="refreshPage()">Chơi lại</button>
                     <br />
                     Bạn đã thua cuộc
                 </div>
@@ -36,7 +35,7 @@
 
             <div class="options flex w-400">
                 <label>
-                    <input type="checkbox" class="nes-checkbox" id="killBoxCheckbox" onchange="toggleKillBox()" />
+                    <input type="checkbox" id="killBoxCheckbox" onchange="toggleKillBox()" />
                     <span>Hộp</span>
                 </label>
 
