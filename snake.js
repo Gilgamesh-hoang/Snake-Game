@@ -120,8 +120,11 @@ const drawEatGems = () => {
 
 // Hàm setListeners được sử dụng xử lý các phím được nhấn.
 const setListeners = () => {
+    
     // Hàm handleKey được gọi khi một phím được nhấn
     const handleKey = ({ keyCode }) => {
+        if(gameState.isGameOver) return;
+
         // Kiểm tra xem mã phím nhấn có tồn tại trong danh sách các phím được định nghĩa hay không
         if (!Object.keys(keys).includes(`${keyCode}`)) return;
 
@@ -339,6 +342,7 @@ const showOverlay = (isGameOver) => {
     let overlayDoc;
     if (isGameOver) {
         overlayDoc = document.getElementById('overlayGameOver');
+        gameState.isGameOver = true;
     } else {
         overlayDoc = document.getElementById('overlayPause');
     }
