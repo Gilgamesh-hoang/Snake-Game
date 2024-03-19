@@ -1,4 +1,4 @@
-let fps = 7;
+let fps;
 const rows = 32;
 const columns = 32;
 const snakeStartLength = 3;
@@ -426,50 +426,48 @@ const showRules = () => {
 
 // Hàm được gọi khi người dùng thay đổi mode
 const handleModeChange = () => {
+    
     const selectMode = document.getElementById('selectMode');
     // Lấy giá trị mode được chọn
-    const fpsValue = parseInt(selectMode.value);
-    localStorage.setItem('fpsValue', fpsValue);
-    fps = fpsValue;
+    const mode = selectMode.value;
+    if (mode == 'easy') {
+        fps = 7;
+        toggleKillBox(false);
+    } else if (mode == 'medium') {
+        fps = 10;
+        toggleKillBox(true);
+    } else if (mode == 'hard') {
+        fps = 15;
+        toggleKillBox(true);
+    } 
+
+
+    
+    localStorage.setItem('mode', mode);
+    
 };
 
 // Hàm để khởi tạo giá trị ban đầu cho thẻ select từ localStorage (nếu có)
 const initializeSelectMode = () => {
     const selectMode = document.getElementById('selectMode');
-    const fpsValue = parseInt(localStorage.getItem('fpsValue'));
-    if (fpsValue) {
-        // Nếu giá trị đã được lưu trong localStorage, cập nhật thẻ select và biến fps
-        selectMode.value = fpsValue.toString();
-        handleModeChange();
+    const mode = localStorage.getItem('mode');
+    if (mode) {
+        // Nếu giá trị đã được lưu trong localStorage, cập nhật thẻ select
+        selectMode.value = mode.toString();
+    }else {
+        selectMode.value = 'easy';
     }
+    handleModeChange();
 };
 
-const toggleKillBox = () => {
-    const checkbox = document.getElementById('killBoxCheckbox');
-    const isChecked = checkbox.checked;
-
-    // Lưu trạng thái của checkbox vào localStorage
-    localStorage.setItem('killBoxEnabled', isChecked);
-
-    // Cập nhật biến enableKillBox
-    options.enableKillBox = isChecked;
-
-    // Thay đổi lớp CSS của phần tử game tùy thuộc vào trạng thái của checkbox
+const toggleKillBox = (isEnable) => {
+    // Thay đổi lớp CSS của phần tử game
     const gameElement = document.getElementById('game');
-    if (isChecked) {
+    options.enableKillBox = isEnable;
+    if (isEnable) {
         gameElement.classList.add('kill-box');
     } else {
         gameElement.classList.remove('kill-box');
-    }
-};
-
-// Hàm initializeKillBox được sử dụng để khởi tạo trạng thái của hộp giết rắn từ local storage khi trò chơi được tải.
-const initializeKillBox = () => {
-    const killBoxEnabled = localStorage.getItem('killBoxEnabled');
-    if (killBoxEnabled === 'true') {
-        document.getElementById('killBoxCheckbox').checked = true;
-        // Kích hoạt hộp giết rắn
-        toggleKillBox();
     }
 };
 
@@ -488,7 +486,6 @@ const play = () => {
     draw();
     showRules();
     initializeSelectMode();
-    initializeKillBox();
 };
 
 // Khi trang web được tải hoàn toàn, gọi hàm play để bắt đầu trò chơi.
