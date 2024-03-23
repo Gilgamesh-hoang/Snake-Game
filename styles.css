@@ -90,7 +90,6 @@ body {
 .barrier {
   background-color: #45d222;
   border: 2px solid black;
-  animation: gemAnimation 0.5s infinite;
 }
 
 .overlay {
