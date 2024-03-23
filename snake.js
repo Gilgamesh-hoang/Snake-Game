@@ -1,11 +1,9 @@
 let fps;
-const rows = 32;
-const columns = 32;
+const columns = 34;
 const snakeStartLength = 3;
 let score = 0;
-const options = {
-    enableKillBox: false,
-};
+let enableKillBox = false;
+let enableBarrier = false;
 
 // Hướng di chuyển của rắn
 const directions = {
@@ -35,7 +33,7 @@ let snake = {
     body: [
         {
             x: columns / 2, // Tọa độ x ban đầu của đầu rắn
-            y: rows / 2, // Tọa độ y ban đầu của đầu rắn
+            y: columns / 2, // Tọa độ y ban đầu của đầu rắn
         },
     ],
     size: snakeStartLength, // Kích thước ban đầu của rắn
@@ -49,10 +47,9 @@ let snake = {
 for (let i = 1; i <= snakeStartLength; i++) {
     snake.body.push({
         x: columns / 2 - i,
-        y: rows / 2,
+        y: columns / 2,
     });
 }
-
 // Trạng thái của trò chơi
 let gameState = {
     // Vị trí của viên ngọc
@@ -60,6 +57,8 @@ let gameState = {
         x: 0,
         y: 0,
     },
+    // Vị trí của các thanh chắn
+    barriers: [],
     isRunning: false,
     isGameOver: false,
 };
@@ -68,7 +67,7 @@ let cells = [];
 // Hàm tạo lưới trò chơi
 const createGrid = () => {
     const game = document.getElementById('game');
-    for (let x = 0; x < rows; x++) {
+    for (let x = 0; x < columns; x++) {
         for (let y = 0; y < columns; y++) {
             const element = document.createElement('cell'); // Tạo phần tử cell mới
             element.setAttribute('id', `${y}-${x}`); // Thiết lập id cho ô
@@ -120,10 +119,9 @@ const drawEatGems = () => {
 
 // Hàm setListeners được sử dụng xử lý các phím được nhấn.
 const setListeners = () => {
-    
     // Hàm handleKey được gọi khi một phím được nhấn
     const handleKey = ({ keyCode }) => {
-        if(gameState.isGameOver) return;
+        if (gameState.isGameOver) return;
 
         // Kiểm tra xem mã phím nhấn có tồn tại trong danh sách các phím được định nghĩa hay không
         if (!Object.keys(keys).includes(`${keyCode}`)) return;
@@ -138,6 +136,7 @@ const setListeners = () => {
             document.getElementById('game').setAttribute('paused', 'false');
             startGameLoop();
             removeOverlay();
+            document.getElementById('selectMode').disabled = true;
         }
         // Nếu đang xử lý phím, không làm gì cả
         if (snake.keyProcessing) return;
@@ -189,17 +188,17 @@ const moveSnake = () => {
             snake.body[0].y -= 1;
             // Nếu không có hộp giết rắn và đầu rắn đi ra ngoài màn hình ở phía trên,
             // đặt lại vị trí của đầu rắn ở phía dưới màn hình
-            if (options.enableKillBox) break;
+            if (enableKillBox) break;
             if (snake.body[0].y < 0) {
-                snake.body[0].y = rows - 1;
+                snake.body[0].y = columns - 1;
             }
             break;
         case directions.DOWN:
             snake.body[0].y += 1;
             // Nếu không có hộp giết rắn và đầu rắn đi ra ngoài màn hình ở phía dưới,
             // đặt lại vị trí của đầu rắn ở phía trên màn hình
-            if (options.enableKillBox) break;
-            if (snake.body[0].y >= rows) {
+            if (enableKillBox) break;
+            if (snake.body[0].y >= columns) {
                 snake.body[0].y = 0;
             }
             break;
@@ -207,7 +206,7 @@ const moveSnake = () => {
             snake.body[0].x -= 1;
             // Nếu không có hộp giết rắn và đầu rắn đi ra ngoài màn hình ở bên trái,
             // đặt lại vị trí của đầu rắn ở phía phải màn hình
-            if (options.enableKillBox) break;
+            if (enableKillBox) break;
             if (snake.body[0].x < 0) {
                 snake.body[0].x = columns - 1;
             }
@@ -216,7 +215,7 @@ const moveSnake = () => {
             snake.body[0].x += 1;
             // Nếu không có hộp giết rắn và đầu rắn đi ra ngoài màn hình ở bên phải,
             //đặt lại vị trí của đầu rắn ở phía trái màn hình
-            if (options.enableKillBox) break;
+            if (enableKillBox) break;
             if (snake.body[0].x >= columns) {
                 snake.body[0].x = 0;
             }
@@ -265,8 +264,11 @@ const growSnake = () => {
 const resetGem = () => {
     // Lọc ra các ô trống trên lưới
     const availableCells = cells.filter((cell) => {
-        // Trả về true nếu ô hiện tại không chứa phần thân của con rắn.
-        return !snake.body.find((snakeCell) => snakeCell.x === cell.x && snakeCell.y === cell.y);
+        // Trả về false nếu ô hiện tại chứa phần thân của con rắn hoặc là một trong các ô barrier.
+        return (
+            !snake.body.some((snakeCell) => snakeCell.x === cell.x && snakeCell.y === cell.y) &&
+            !gameState.barriers.some((barrierCell) => barrierCell.x === cell.x && barrierCell.y === cell.y)
+        );
     });
     // Chọn ngẫu nhiên một ô trống từ danh sách các ô trống.
     const randomCell = availableCells[Math.floor(Math.random() * availableCells.length)];
@@ -329,6 +331,24 @@ const showOverlay = (isGameOver) => {
     // Đặt thuộc tính paused của trò chơi là true để ngừng di chuyển con rắn.
     document.getElementById('game').setAttribute('paused', 'true');
 
+    // Chọn overlay tương ứng để hiển thị (game over hoặc tạm dừng).
+    let overlayDoc;
+    if (isGameOver) {
+        overlayDoc = document.getElementById('overlayGameOver');
+        gameState.isGameOver = true;
+        // Kiểm tra và cập nhật thuộc tính disabled
+        document.getElementById('selectMode').disabled = false;
+    } else {
+        overlayDoc = document.getElementById('overlayPause');
+    }
+
+    showHighestScore();
+
+    // Hiển thị overlay lên màn hình.
+    overlayDoc.style = 'display: flex';
+};
+
+const showHighestScore = () => {
     // Lấy điểm số cao nhất từ local storage, so sánh và cập nhật.
     let highestScore = localStorage.getItem('highestScore') || 0;
     highestScore = Math.max(highestScore, score);
@@ -337,17 +357,6 @@ const showOverlay = (isGameOver) => {
     // Hiển thị điểm số cao nhất.
     const highestScoreDoc = document.getElementById('highestScore');
     highestScoreDoc.innerHTML = `Điểm cao nhất: ${highestScore}`;
-
-    // Chọn overlay tương ứng để hiển thị (game over hoặc tạm dừng).
-    let overlayDoc;
-    if (isGameOver) {
-        overlayDoc = document.getElementById('overlayGameOver');
-        gameState.isGameOver = true;
-    } else {
-        overlayDoc = document.getElementById('overlayPause');
-    }
-    // Hiển thị overlay lên màn hình.
-    overlayDoc.style = 'display: flex';
 };
 
 // Hàm removeOverlay được sử dụng để loại bỏ lớp phủ khi trò chơi tiếp tục sau khi tạm dừng.
@@ -366,6 +375,13 @@ const checkCollision = () => {
             showOverlay(true);
         }
     }
+
+    gameState.barriers.forEach((barrier) => {
+        // Nếu đầu của con rắn trùng với barrier.
+        if (head.x === barrier.x && head.y === barrier.y) {
+            showOverlay(true);
+        }
+    });
 };
 
 // Hàm drawGem được sử dụng để vẽ viên ngọc trên lưới.
@@ -384,9 +400,11 @@ const updateScore = () => {
         // Hiển thị điểm số hiện tại.
         scoreDoc.innerHTML = `Điểm: ${score}`;
 
-        let highestScore = localStorage.getItem('highestScore') || 0;
-        const highestScoreDoc = document.getElementById('highestScore');
-        highestScoreDoc.innerHTML = `Điểm cao nhất: ${highestScore}`;
+        // let highestScore = localStorage.getItem('highestScore') || 0;
+        // const highestScoreDoc = document.getElementById('highestScore');
+        // highestScoreDoc.innerHTML = `Điểm cao nhất: ${highestScore}`;
+
+        showHighestScore();
     } else {
         // Hiển thị hướng dẫn bắt đầu trò chơi khi con rắn chưa di chuyển.
         scoreDoc.innerHTML = `Nhấn phím di chuyển bất kì để bắt đầu`;
@@ -400,6 +418,7 @@ const draw = () => {
     drawSnake();
     drawEatGems();
     updateScore();
+    drawBarrier(enableBarrier);
 };
 
 // Hàm showRules được sử dụng để hiển thị modal.
@@ -411,6 +430,7 @@ const showRules = () => {
     ruleBtn.addEventListener('click', () => {
         // Khi nút được nhấn, thêm lớp 'open' vào modal để hiển thị nó
         modal.classList.add('open');
+        if (!gameState.isGameOver) showOverlay(false);
     });
 
     modal.addEventListener('click', () => {
@@ -426,25 +446,31 @@ const showRules = () => {
 
 // Hàm được gọi khi người dùng thay đổi mode
 const handleModeChange = () => {
-    
     const selectMode = document.getElementById('selectMode');
     // Lấy giá trị mode được chọn
     const mode = selectMode.value;
+
+    removeBarrier();
+
     if (mode == 'easy') {
         fps = 7;
         toggleKillBox(false);
+        enableBarrier = false;
     } else if (mode == 'medium') {
         fps = 10;
         toggleKillBox(true);
+        enableBarrier = false;
     } else if (mode == 'hard') {
         fps = 15;
         toggleKillBox(true);
-    } 
+        enableBarrier = true;
+        createBarriers();
+    }
 
+    // Khi một tùy chọn được chọn, làm cho thẻ select mất focus
+    selectMode.blur();
 
-    
     localStorage.setItem('mode', mode);
-    
 };
 
 // Hàm để khởi tạo giá trị ban đầu cho thẻ select từ localStorage (nếu có)
@@ -454,7 +480,7 @@ const initializeSelectMode = () => {
     if (mode) {
         // Nếu giá trị đã được lưu trong localStorage, cập nhật thẻ select
         selectMode.value = mode.toString();
-    }else {
+    } else {
         selectMode.value = 'easy';
     }
     handleModeChange();
@@ -463,7 +489,7 @@ const initializeSelectMode = () => {
 const toggleKillBox = (isEnable) => {
     // Thay đổi lớp CSS của phần tử game
     const gameElement = document.getElementById('game');
-    options.enableKillBox = isEnable;
+    enableKillBox = isEnable;
     if (isEnable) {
         gameElement.classList.add('kill-box');
     } else {
@@ -473,6 +499,113 @@ const toggleKillBox = (isEnable) => {
 
 const refreshPage = () => {
     location.reload();
+};
+/**
+ * Vẽ các rào cản trên lưới nếu cờ enableBarrier được thiết lập thành true.
+ * @param {boolean} enableBarrier - Xác định xem liệu rào cản có được kích hoạt hay không.
+ */
+const drawBarrier = (enableBarrier) => {
+    if (enableBarrier) {
+        gameState.barriers.forEach((barrier) => {
+            const barrierLocate = getCell(barrier.x, barrier.y);
+            barrierLocate.setAttribute('class', 'barrier');
+        });
+    }
+};
+
+/**
+ * Loại bỏ các rào cản khỏi lưới.
+ */
+const removeBarrier = () => {
+    gameState.barriers.forEach((barrier) => {
+        const barrierLocate = getCell(barrier.x, barrier.y);
+        barrierLocate.removeAttribute('class', 'barrier');
+    });
+    // Xóa tất cả các rào cản từ mảng barriers
+    gameState.barriers.length = 0;
+};
+
+/**
+ * Tạo các rào cản trên lưới.
+ */
+const createBarriers = () => {
+    /**
+     * Hàm tính khoảng cách Euclid giữa hai điểm trong mặt phẳng.
+     * @returns {number} - Khoảng cách giữa hai điểm.
+     */
+    const calculateDistance = (coordinatesA, coordinatesB) => {
+        const dx = Math.abs(coordinatesA.x - coordinatesB.x);
+        const dy = Math.abs(coordinatesA.y - coordinatesB.y);
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    // Lọc ra các ô trống trên lưới và không kề với con rắn
+    const availableCells = cells.filter((cell) => {
+        // Kiểm tra xem ô hiện tại có nằm trong phạm vi không
+        const isInRange = cell.x > 0 && cell.x < columns - 1 && cell.y > 0 && cell.y < columns - 1;
+        // Trả về true nếu ô hiện tại không chứa phần thân của con rắn và không kề với con rắn
+        const isNotAdjacentToSnake = !snake.body.some((snakeCell) => {
+            // Kiểm tra xem ô hiện tại có kề với bất kỳ phần tử nào trong phần thân của con rắn không
+            return (
+                (Math.abs(cell.x - snakeCell.x) === 1 && cell.y === snakeCell.y) ||
+                (Math.abs(cell.y - snakeCell.y) === 1 && cell.x === snakeCell.x)
+            );
+        });
+        return isInRange && isNotAdjacentToSnake;
+    });
+
+    // Mảng lưu trữ các rào cản
+    const barriers = [];
+    // Tạo 5 rào cản
+    for (let i = 0; i < 5; ) {
+        // Chọn ngẫu nhiên một ô trống từ danh sách các ô trống.
+        const randomCell = availableCells[Math.floor(Math.random() * availableCells.length)];
+        if (i === 0) {
+            barriers.push(randomCell);
+            i++;
+        } else {
+            let isAcceptable = true;
+            // Kiểm tra khoảng cách giữa ô hiện tại và các rào cản đã có
+            for (let j = 0; j < i; j++) {
+                const distance = calculateDistance(randomCell, barriers[j]);
+                // Nếu khoảng cách nhỏ hơn 12, không chấp nhận ô hiện tại
+                if (distance < 12) {
+                    isAcceptable = false;
+                    break;
+                }
+            }
+            // Nếu ô hiện tại chấp nhận, thêm vào mảng barriers
+            if (isAcceptable) {
+                barriers.push(randomCell);
+                i++;
+            }
+        }
+    }
+
+    // Tạo rào cản dọc và ngang cho mỗi rào cản
+    for (let i = 0; i < barriers.length; i++) {
+        const barrier = barriers[i];
+        gameState.barriers.push(barrier);
+
+        if (i % 2 === 0) {
+            // Nếu là rào cản chẵn, tạo rào cản dọc
+            for (let j = -1; j <= 1; j++) {
+                if (j !== 0) {
+                    gameState.barriers.push({ y: barrier.y, x: barrier.x + j });
+                }
+            }
+        } else {
+            // Nếu là rào cản lẻ, tạo rào cản ngang
+            for (let j = -1; j <= 1; j++) {
+                if (j !== 0) {
+                    gameState.barriers.push({ y: barrier.y + j, x: barrier.x });
+                }
+            }
+        }
+    }
+
+    // Vẽ các rào cản
+    drawBarrier(enableBarrier);
 };
 
 // Hàm play được sử dụng để bắt đầu trò chơi khi trang web được tải hoàn toàn.
