@@ -5,7 +5,9 @@ let score = 0;
 let enableKillBox = false;
 let enableBarrier = false;
 
-// Hướng di chuyển của rắn
+/**
+ * Hướng di chuyển của rắn
+ */
 const directions = {
     LEFT: 'LEFT',
     RIGHT: 'RIGHT',
@@ -17,7 +19,9 @@ const controls = {
     ESC: 'ESC',
 };
 
-// Bảng mã phím tương ứng với hướng di chuyển
+/**
+ Bảng mã phím tương ứng với hướng di chuyển
+ */
 const keys = {
     38: 'UP',
     40: 'DOWN',
@@ -26,7 +30,7 @@ const keys = {
     27: 'ESC',
 };
 
-// Đối tượng rắn
+/** Đối tượng rắn */
 let snake = {
     direction: directions.RIGHT, // Hướng ban đầu của rắn là sang phải
     isMoving: false, // Trạng thái di chuyển của rắn
@@ -43,14 +47,15 @@ let snake = {
     keyProcessing: false, // Biến đánh dấu quá trình xử lý phím
 };
 
-// Khởi tạo độ dài ban đầu của rắn và thêm các phần tử vào body của rắn
+/** Khởi tạo độ dài ban đầu của rắn và thêm các phần tử vào body của rắn */
 for (let i = 1; i <= snakeStartLength; i++) {
     snake.body.push({
         x: columns / 2 - i,
         y: columns / 2,
     });
 }
-// Trạng thái của trò chơi
+
+/** Trạng thái của trò chơi */
 let gameState = {
     // Vị trí của viên ngọc
     gem: {
@@ -64,7 +69,7 @@ let gameState = {
 };
 
 let cells = [];
-// Hàm tạo lưới trò chơi
+/**Hàm tạo lưới trò chơi */
 const createGrid = () => {
     const game = document.getElementById('game');
     for (let x = 0; x < columns; x++) {
@@ -78,13 +83,13 @@ const createGrid = () => {
     game.style = `grid-template-columns: repeat(${columns}, 1fr)`; // Thiết lập kiểu lưới
 };
 
-// Hàm lấy ô trên lưới dựa trên tọa độ x và y
+/** Hàm lấy ô trên lưới dựa trên tọa độ x và y */
 const getCell = (x, y) => document.getElementById(`${x}-${y}`);
 
-// Hàm lấy ô trên lưới dựa trên chuỗi id
+/**Hàm lấy ô trên lưới dựa trên chuỗi id */
 const getCellByString = (str) => document.getElementById(str);
 
-// Hàm đặt lại class của tất cả các ô trên lưới
+/** Hàm đặt lại class của tất cả các ô trên lưới */
 const reset = () => {
     const cells = document.getElementsByTagName('cell'); // Lấy tất cả các ô trên lưới
     for (var i = 0; i < cells.length; i++) {
@@ -94,7 +99,7 @@ const reset = () => {
     }
 };
 
-// Hàm vẽ rắn trên lưới
+/** Hàm vẽ rắn trên lưới */
 const drawSnake = () => {
     // Duyệt qua mỗi phần tử trong body của rắn, trừ đầu và đuôi
     for (let i = 1; i < snake.body.length - 1; i++) {
@@ -112,12 +117,12 @@ const drawSnake = () => {
     getCell(snakeTail.x, snakeTail.y).setAttribute('class', 'snake tail');
 };
 
-// Hàm vẽ các viên ngọc đã ăn trên lưới
+/** Hàm vẽ các viên ngọc đã ăn trên lưới */
 const drawEatGems = () => {
     snake.gemStack.forEach((gem) => getCell(gem.x, gem.y).setAttribute('class', 'snake eatGem'));
 };
 
-// Hàm setListeners được sử dụng xử lý các phím được nhấn.
+/** Hàm setListeners được sử dụng xử lý các phím được nhấn. */
 const setListeners = () => {
     // Hàm handleKey được gọi khi một phím được nhấn
     const handleKey = ({ keyCode }) => {
@@ -171,7 +176,7 @@ const setListeners = () => {
     document.onkeydown = handleKey;
 };
 
-// Hàm moveSnake được sử dụng để di chuyển con rắn
+/** Hàm moveSnake được sử dụng để di chuyển con rắn */
 const moveSnake = () => {
     // Nếu con rắn không di chuyển, không làm gì cả
     if (!snake.isMoving) return;
@@ -247,7 +252,7 @@ const moveSnake = () => {
     snake.keyProcessing = false;
 };
 
-// Hàm growSnake được sử dụng để mở rộng độ dài của con rắn sau khi ăn một viên gem.
+/** Hàm growSnake được sử dụng để mở rộng độ dài của con rắn sau khi ăn một viên gem. */
 const growSnake = () => {
     // Đặt cờ grow là false để ngăn việc con rắn tiếp tục mở rộng trong lượt di chuyển tiếp theo.
     snake.grow = false;
@@ -260,7 +265,7 @@ const growSnake = () => {
     });
 };
 
-// Hàm resetGem được sử dụng để đặt lại vị trí của viên gem trên lưới
+/** Hàm resetGem được sử dụng để đặt lại vị trí của viên gem trên lưới */
 const resetGem = () => {
     // Lọc ra các ô trống trên lưới
     const availableCells = cells.filter((cell) => {
@@ -277,7 +282,7 @@ const resetGem = () => {
 };
 
 let gameLoop;
-// Hàm startGameLoop được sử dụng để bắt đầu vòng lặp chính của trò chơi
+/** Hàm startGameLoop được sử dụng để bắt đầu vòng lặp chính của trò chơi */
 const startGameLoop = () => {
     // Sử dụng setInterval để gọi liên tục hàm draw và moveSnake với tốc độ cố định (fps).
     gameLoop = setInterval(() => {
@@ -292,7 +297,7 @@ const startGameLoop = () => {
     }, 1000 / fps);
 };
 
-// Hàm eatGem xử lý việc con rắn ăn viên ngọc.
+/** Hàm eatGem xử lý việc con rắn ăn viên ngọc. */
 const eatGem = () => {
     // Kiểm tra nếu đầu của con rắn trùng vị trí với viên ngọc.
     const snakeHead = snake.body[0];
@@ -323,7 +328,10 @@ const eatGem = () => {
     });
 };
 
-// Hàm showOverlay được sử dụng để hiển thị lớp phủ khi trò chơi kết thúc.
+/**
+ * Hiển thị lớp phủ khi trò chơi kết thúc.
+ * @param {boolean} isGameOver - Xác định xem trò chơi đã kết thúc hay chỉ tạm dừng.
+ */
 const showOverlay = (isGameOver) => {
     // Dừng vòng lặp chính của trò chơi.
     clearInterval(gameLoop);
@@ -348,6 +356,7 @@ const showOverlay = (isGameOver) => {
     overlayDoc.style = 'display: flex';
 };
 
+/** Hiển thị điểm số cao nhất */
 const showHighestScore = () => {
     // Lấy điểm số cao nhất từ local storage, so sánh và cập nhật.
     let highestScore = localStorage.getItem('highestScore') || 0;
@@ -359,13 +368,13 @@ const showHighestScore = () => {
     highestScoreDoc.innerHTML = `Điểm cao nhất: ${highestScore}`;
 };
 
-// Hàm removeOverlay được sử dụng để loại bỏ lớp phủ khi trò chơi tiếp tục sau khi tạm dừng.
+/** Hàm removeOverlay được sử dụng để loại bỏ lớp phủ khi trò chơi tiếp tục sau khi tạm dừng. */
 const removeOverlay = () => {
     document.getElementById('overlayPause').style = 'display: none';
     document.getElementById('overlayGameOver').style = 'display: none';
 };
 
-// Hàm checkCollision được sử dụng để kiểm tra va chạm của con rắn với bản thân mình.
+/** Hàm checkCollision được sử dụng để kiểm tra va chạm của con rắn với bản thân mình. */
 const checkCollision = () => {
     // Lấy đầu của con rắn.
     const head = snake.body[0];
@@ -384,13 +393,13 @@ const checkCollision = () => {
     });
 };
 
-// Hàm drawGem được sử dụng để vẽ viên ngọc trên lưới.
+/** Hàm drawGem được sử dụng để vẽ viên ngọc trên lưới. */
 const drawGem = () => {
     const gem = getCell(gameState.gem.x, gameState.gem.y);
     gem.setAttribute('class', 'gem');
 };
 
-// Hàm updateScore được sử dụng để cập nhật điểm số
+/** Hàm updateScore được sử dụng để cập nhật điểm số */
 const updateScore = () => {
     // Lấy phần tử hiển thị điểm số từ DOM.
     const scoreDoc = document.getElementById('score');
@@ -411,7 +420,7 @@ const updateScore = () => {
     }
 };
 
-// Hàm draw được sử dụng để vẽ toàn bộ trạng thái của trò chơi trên lưới.
+/** Hàm draw được sử dụng để vẽ toàn bộ trạng thái của trò chơi trên lưới. */
 const draw = () => {
     reset();
     drawGem();
@@ -421,7 +430,7 @@ const draw = () => {
     drawBarrier(enableBarrier);
 };
 
-// Hàm showRules được sử dụng để hiển thị modal.
+/** Hàm showRules được sử dụng để hiển thị modal. */
 const showRules = () => {
     const ruleBtn = document.querySelector('.js-rule');
     const modal = document.querySelector('.js-modal');
@@ -444,7 +453,7 @@ const showRules = () => {
     });
 };
 
-// Hàm được gọi khi người dùng thay đổi mode
+/** Hàm được gọi khi người dùng thay đổi mode */
 const handleModeChange = () => {
     const selectMode = document.getElementById('selectMode');
     // Lấy giá trị mode được chọn
@@ -473,7 +482,7 @@ const handleModeChange = () => {
     localStorage.setItem('mode', mode);
 };
 
-// Hàm để khởi tạo giá trị ban đầu cho thẻ select từ localStorage (nếu có)
+/** Hàm để khởi tạo giá trị ban đầu cho thẻ select từ localStorage (nếu có) */
 const initializeSelectMode = () => {
     const selectMode = document.getElementById('selectMode');
     const mode = localStorage.getItem('mode');
@@ -486,10 +495,16 @@ const initializeSelectMode = () => {
     handleModeChange();
 };
 
+/**
+ * Chuyển đổi trạng thái của hộp giết rắn và cập nhật lớp CSS tương ứng cho phần tử game.
+ * @param {boolean} isEnable - Xác định xem hộp giết rắn có được kích hoạt hay không.
+ */
 const toggleKillBox = (isEnable) => {
-    // Thay đổi lớp CSS của phần tử game
+    // Lấy phần tử game từ DOM
     const gameElement = document.getElementById('game');
+    // Cập nhật trạng thái của biến enableKillBox
     enableKillBox = isEnable;
+    // Thêm hoặc loại bỏ lớp CSS "kill-box" tùy thuộc vào trạng thái của hộp giết rắn
     if (isEnable) {
         gameElement.classList.add('kill-box');
     } else {
@@ -513,9 +528,7 @@ const drawBarrier = (enableBarrier) => {
     }
 };
 
-/**
- * Loại bỏ các rào cản khỏi lưới.
- */
+/** Loại bỏ các rào cản khỏi lưới. */
 const removeBarrier = () => {
     gameState.barriers.forEach((barrier) => {
         const barrierLocate = getCell(barrier.x, barrier.y);
@@ -525,9 +538,7 @@ const removeBarrier = () => {
     gameState.barriers.length = 0;
 };
 
-/**
- * Tạo các rào cản trên lưới.
- */
+/** Tạo các rào cản trên lưới. */
 const createBarriers = () => {
     /**
      * Hàm tính khoảng cách Euclid giữa hai điểm trong mặt phẳng.
@@ -608,7 +619,7 @@ const createBarriers = () => {
     drawBarrier(enableBarrier);
 };
 
-// Hàm play được sử dụng để bắt đầu trò chơi khi trang web được tải hoàn toàn.
+/** Hàm play được sử dụng để bắt đầu trò chơi khi trang web được tải hoàn toàn. */
 const play = () => {
     // Đặt thuộc tính paused của trò chơi là true để tạm dừng trò chơi khi mới bắt đầu.
     document.getElementById('game').setAttribute('paused', 'true');
