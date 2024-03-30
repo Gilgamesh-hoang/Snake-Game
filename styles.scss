@@ -82,6 +82,19 @@ body {
                     border: 2px solid black;
                     animation: gemAnimation 0.5s infinite;
                 }
+
+                &.gem-big {
+                    scale: 1.7;
+                    border-radius: 50%;
+                    background: -webkit-linear-gradient(to right, #c31432, #240b36); /* Chrome 10-25, Safari 5.1-6 */
+                    background: linear-gradient(to right, #c31432, #240b36);
+                    animation: gemAnimation 0.5s infinite;
+                }
+            }
+
+            .barrier {
+                background-color: #45d222;
+                border: 2px solid black;
             }
         }
 
@@ -98,27 +111,24 @@ body {
             color: #fff;
             background-color: #255987;
         }
+        .overlay {
+            position: absolute;
+            top: 0;
+            display: none;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            width: 100%;
+            height: 100%;
+            // z-index: 10;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: white;
+        }
     }
 }
-.barrier {
-    background-color: #45d222;
-    border: 2px solid black;
-}
-.overlay {
-    position: absolute;
-    top: 0;
-    display: none;
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
-    width: 100%;
-    height: 100%;
-    // z-index: 10;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
-    font-size: 2rem;
-    color: white;
-}
+
 .info-container {
     display: flex;
     margin-top: 1rem;

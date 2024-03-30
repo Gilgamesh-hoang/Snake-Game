@@ -2,6 +2,7 @@ let fps;
 const columns = 34;
 const snakeStartLength = 3;
 let score = 0;
+let counter = 0;
 let enableKillBox = false;
 let enableBarrier = false;
 
@@ -62,6 +63,8 @@ let gameState = {
         x: 0,
         y: 0,
     },
+    // Vị trí của viên ngọc lớn
+    bigGem: undefined,
     // Vị trí của các thanh chắn
     barriers: [],
     isRunning: false,
@@ -248,6 +251,9 @@ const moveSnake = () => {
     // Xử lý việc ăn gem
     eatGem();
 
+    // Xử lý việc ăn big gem
+    eatBigGem();
+
     // Đánh dấu rằng không còn xử lý phím nữa
     snake.keyProcessing = false;
 };
@@ -267,18 +273,17 @@ const growSnake = () => {
 
 /** Hàm resetGem được sử dụng để đặt lại vị trí của viên gem trên lưới */
 const resetGem = () => {
-    // Lọc ra các ô trống trên lưới
-    const availableCells = cells.filter((cell) => {
-        // Trả về false nếu ô hiện tại chứa phần thân của con rắn hoặc là một trong các ô barrier.
-        return (
-            !snake.body.some((snakeCell) => snakeCell.x === cell.x && snakeCell.y === cell.y) &&
-            !gameState.barriers.some((barrierCell) => barrierCell.x === cell.x && barrierCell.y === cell.y)
-        );
-    });
+    const availableCells = getAvailableCells();
     // Chọn ngẫu nhiên một ô trống từ danh sách các ô trống.
     const randomCell = availableCells[Math.floor(Math.random() * availableCells.length)];
     // Đặt vị trí của viên gem tại ô trống được chọn ngẫu nhiên.
     gameState.gem = randomCell;
+};
+
+/** Hàm drawGem được sử dụng để vẽ viên ngọc trên lưới. */
+const drawGem = () => {
+    const gem = getCell(gameState.gem.x, gameState.gem.y);
+    gem.setAttribute('class', 'gem');
 };
 
 let gameLoop;
@@ -311,9 +316,49 @@ const eatGem = () => {
         resetGem();
         // Tăng điểm số của người chơi lên một đơn vị.
         score += 1;
+        counter += 1;
+        if (counter % 5 === 0) {
+            createBigGem();
+        }
     }
+    handleEatGemStack();
+};
 
-    // Kiểm tra nếu con rắn đã ăn viên ngọc từng được thêm vào gemStack.
+/** Xử lý khi con rắn ăn viên ngọc lớn. */
+const eatBigGem = () => {
+    // Kiểm tra nếu đầu của con rắn trùng vị trí với viên ngọc lớn.
+    const snakeHead = snake.body[0];
+    const gemLocation = gameState.bigGem;
+    if (gemLocation !== undefined && snakeHead.x === gemLocation.x && snakeHead.y === gemLocation.y) {
+        // Thêm vị trí của viên gem vào ngăn xếp gemStack để hiển thị sau này.
+        snake.gemStack.push({
+            x: gemLocation.x,
+            y: gemLocation.y,
+        });
+        gameState.bigGem = undefined;
+        // Tăng điểm số của người chơi
+        score += 3;
+
+        // Reset bộ đếm.
+        counter = 0;
+    }
+    handleEatGemStack();
+};
+
+/** Lấy danh sách các ô trống trên lưới. */
+const getAvailableCells = () => {
+    return cells.filter((cell) => {
+        // Lọc các ô bị chiếm bởi thân rắn, barrier hoặc viên ngọc.
+        return (
+            !snake.body.some((snakeCell) => snakeCell.x === cell.x && snakeCell.y === cell.y) &&
+            !gameState.barriers.some((barrierCell) => barrierCell.x === cell.x && barrierCell.y === cell.y) &&
+            !(gameState.gem.x === cell.x && gameState.gem.y === cell.y)
+        );
+    });
+};
+
+/** Xử lý khi con rắn ăn viên ngọc trong ngăn xếp gemStack. */
+const handleEatGemStack = () => {
     const bodyLength = snake.body.length - 1;
     snake.gemStack.forEach((gem, index) => {
         // Nếu phần thân của con rắn đến vị trí của viên ngọc trong ngăn xếp gemStack.
@@ -393,12 +438,6 @@ const checkCollision = () => {
     });
 };
 
-/** Hàm drawGem được sử dụng để vẽ viên ngọc trên lưới. */
-const drawGem = () => {
-    const gem = getCell(gameState.gem.x, gameState.gem.y);
-    gem.setAttribute('class', 'gem');
-};
-
 /** Hàm updateScore được sử dụng để cập nhật điểm số */
 const updateScore = () => {
     // Lấy phần tử hiển thị điểm số từ DOM.
@@ -428,6 +467,7 @@ const draw = () => {
     drawEatGems();
     updateScore();
     drawBarrier(enableBarrier);
+    drawBigGem();
 };
 
 /** Hàm showRules được sử dụng để hiển thị modal. */
@@ -550,73 +590,108 @@ const createBarriers = () => {
         return Math.sqrt(dx * dx + dy * dy);
     };
 
-    // Lọc ra các ô trống trên lưới và không kề với con rắn
-    const availableCells = cells.filter((cell) => {
-        // Kiểm tra xem ô hiện tại có nằm trong phạm vi không
-        const isInRange = cell.x > 0 && cell.x < columns - 1 && cell.y > 0 && cell.y < columns - 1;
-        // Trả về true nếu ô hiện tại không chứa phần thân của con rắn và không kề với con rắn
-        const isNotAdjacentToSnake = !snake.body.some((snakeCell) => {
-            // Kiểm tra xem ô hiện tại có kề với bất kỳ phần tử nào trong phần thân của con rắn không
-            return (
-                (Math.abs(cell.x - snakeCell.x) === 1 && cell.y === snakeCell.y) ||
-                (Math.abs(cell.y - snakeCell.y) === 1 && cell.x === snakeCell.x)
-            );
+    /**
+     * Lọc ra các ô trống trên lưới và không kề với con rắn.
+     * @returns {Array} - Mảng các ô trống thỏa mãn điều kiện.
+     */
+    const filterAvailableCells = () => {
+        return cells.filter((cell) => {
+            const isInRange = cell.x > 0 && cell.x < columns - 1 && cell.y > 0 && cell.y < columns - 1;
+            const isNotAdjacentToSnake = !snake.body.some((snakeCell) => {
+                return (
+                    (Math.abs(cell.x - snakeCell.x) === 1 && cell.y === snakeCell.y) ||
+                    (Math.abs(cell.y - snakeCell.y) === 1 && cell.x === snakeCell.x)
+                );
+            });
+            return isInRange && isNotAdjacentToSnake;
         });
-        return isInRange && isNotAdjacentToSnake;
+    };
+
+    /**
+     * Lấy ngẫu nhiên một ô trống từ danh sách các ô trống.
+     * @param {Array} availableCells - Danh sách các ô trống.
+     * @returns {Object} - Ô trống được chọn ngẫu nhiên.
+     */
+    const getRandomCell = (availableCells) => {
+        return availableCells[Math.floor(Math.random() * availableCells.length)];
+    };
+
+    /**
+     * Tạo một rào cản mới trên lưới.
+     * @returns {Object} - Tọa độ của ô rào cản mới.
+     */
+    const createBarrier = () => {
+        const availableCells = filterAvailableCells();
+        return getRandomCell(availableCells);
+    };
+
+    /**
+     * Kiểm tra xem khoảng cách giữa rào cản mới và các rào cản đã có có chấp nhận được không.
+     * @param {Object} newBarrier - Tọa độ của rào cản mới.
+     * @param {Array} barriers - Danh sách các rào cản đã có.
+     * @returns {boolean} - True nếu khoảng cách chấp nhận được, ngược lại false.
+     */
+    const checkAcceptableDistance = (newBarrier, barriers) => {
+        return barriers.every((existingBarrier) => {
+            const distance = calculateDistance(newBarrier, existingBarrier);
+            return distance >= 12;
+        });
+    };
+
+    /**
+     * Thêm các ô rào cản xung quanh ô rào cản chính.
+     * @param {Object} barrier - Tọa độ của ô rào cản chính.
+     * @param {string} direction - Hướng mở rộng rào cản ('vertical' hoặc 'horizontal').
+     */
+    const addBarrierCells = (barrier, direction) => {
+        const directions = direction === 'vertical' ? ['x', 'y'] : ['y', 'x'];
+        for (let j = -1; j <= 1; j++) {
+            if (j !== 0) {
+                const barrierCell = {
+                    [directions[1]]: barrier[directions[1]] + j,
+                    [directions[0]]: barrier[directions[0]],
+                };
+                gameState.barriers.push(barrierCell);
+            }
+        }
+    };
+
+    //Tạo các rào cản trên lưới.
+    const barriers = [];
+    for (let i = 0; i < 5; ) {
+        const newBarrier = createBarrier();
+        if (i === 0 || checkAcceptableDistance(newBarrier, barriers)) {
+            barriers.push(newBarrier);
+            i++;
+        }
+    }
+    // Thêm các ô rào cản xung quanh
+    barriers.forEach((barrier, index) => {
+        gameState.barriers.push(barrier);
+        const direction = index % 2 === 0 ? 'vertical' : 'horizontal';
+        addBarrierCells(barrier, direction);
     });
 
-    // Mảng lưu trữ các rào cản
-    const barriers = [];
-    // Tạo 5 rào cản
-    for (let i = 0; i < 5; ) {
+    drawBarrier(enableBarrier);
+};
+
+/** Tạo viên ngọc lớn nếu thỏa điều kiện cho phép. */
+const createBigGem = () => {
+    if (counter !== 0 && counter % 5 === 0 && gameState.bigGem === undefined) {
+        const availableCells = getAvailableCells();
         // Chọn ngẫu nhiên một ô trống từ danh sách các ô trống.
         const randomCell = availableCells[Math.floor(Math.random() * availableCells.length)];
-        if (i === 0) {
-            barriers.push(randomCell);
-            i++;
-        } else {
-            let isAcceptable = true;
-            // Kiểm tra khoảng cách giữa ô hiện tại và các rào cản đã có
-            for (let j = 0; j < i; j++) {
-                const distance = calculateDistance(randomCell, barriers[j]);
-                // Nếu khoảng cách nhỏ hơn 12, không chấp nhận ô hiện tại
-                if (distance < 12) {
-                    isAcceptable = false;
-                    break;
-                }
-            }
-            // Nếu ô hiện tại chấp nhận, thêm vào mảng barriers
-            if (isAcceptable) {
-                barriers.push(randomCell);
-                i++;
-            }
-        }
+        // Đặt vị trí của viên gem tại ô trống được chọn ngẫu nhiên.
+        gameState.bigGem = randomCell;
     }
+};
 
-    // Tạo rào cản dọc và ngang cho mỗi rào cản
-    for (let i = 0; i < barriers.length; i++) {
-        const barrier = barriers[i];
-        gameState.barriers.push(barrier);
-
-        if (i % 2 === 0) {
-            // Nếu là rào cản chẵn, tạo rào cản dọc
-            for (let j = -1; j <= 1; j++) {
-                if (j !== 0) {
-                    gameState.barriers.push({ y: barrier.y, x: barrier.x + j });
-                }
-            }
-        } else {
-            // Nếu là rào cản lẻ, tạo rào cản ngang
-            for (let j = -1; j <= 1; j++) {
-                if (j !== 0) {
-                    gameState.barriers.push({ y: barrier.y + j, x: barrier.x });
-                }
-            }
-        }
+/** Vẽ viên ngọc lớn nếu nó tồn tại. */
+const drawBigGem = () => {
+    if (gameState.bigGem !== undefined) {
+        const gem = getCell(gameState.bigGem.x, gameState.bigGem.y);
+        gem.setAttribute('class', 'gem-big');
     }
-
-    // Vẽ các rào cản
-    drawBarrier(enableBarrier);
 };
 
 /** Hàm play được sử dụng để bắt đầu trò chơi khi trang web được tải hoàn toàn. */
