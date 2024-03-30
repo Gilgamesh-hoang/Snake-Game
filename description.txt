@@ -1,0 +1,6 @@
+1. Game chạy bình thường
+2. Khi ăn ngọc được 5 lần thì sẽ xuất 1 viên ngọc to, ăn nó thì được cộng 3 điểm
+3. Chế độ Dễ: Rắn di chuyển chậm, va vào tường sẽ không chết.
+4. Chế độ Trung bình: Rắn di chuyển nhanh hơn, va vào tường sẽ bị chết.
+5. Chế độ Khó: Rắn di chuyển nhanh, va vào tường hoặc các thanh chắn sẽ bị chết.
+6. Sử dụng local storage để lưu điểm số cao nhất và độ khó
