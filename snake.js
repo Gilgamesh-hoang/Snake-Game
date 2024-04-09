@@ -4,12 +4,14 @@
 // Lớp: DH21DTB
 
 let fps;
-const columns = 34;
+const columns = 36;
+const rows = 36;
 const snakeStartLength = 3;
 let score = 0;
 let counter = 0;
 let enableKillBox = false;
 let enableBarrier = false;
+let enableMaze = false;
 
 /**
  * Hướng di chuyển của rắn
@@ -72,6 +74,8 @@ let gameState = {
     bigGem: undefined,
     // Vị trí của các thanh chắn
     barriers: [],
+    // Vị trí của các thanh chắn trong mê cung
+    maze: [],
     isRunning: false,
     isGameOver: false,
 };
@@ -463,6 +467,7 @@ const draw = () => {
     drawEatGems();
     updateScore();
     drawBarrier(enableBarrier);
+    drawMaze(enableMaze);
     drawBigGem();
 };
 
@@ -496,6 +501,7 @@ const handleModeChange = () => {
     const mode = selectMode.value;
 
     removeBarrier();
+    removeMaze();
 
     if (mode == 'easy') {
         fps = 7;
@@ -510,6 +516,11 @@ const handleModeChange = () => {
         toggleKillBox(true);
         enableBarrier = true;
         createBarriers();
+    } else if (mode == 'maze') {
+        fps = 10;
+        toggleKillBox(true);
+        enableMaze = true;
+        createMaze();
     }
 
     // Khi một mode được chọn, làm cho thẻ select mất focus
@@ -661,6 +672,144 @@ const drawBigGem = () => {
         const gem = getCell(gameState.bigGem.x, gameState.bigGem.y);
         gem.setAttribute('class', 'gem-big');
     }
+};
+
+/** Tạo mê cung trên lưới trò chơi.*/
+const createMaze = () => {
+    /**
+     * Tạo mảng các điểm từ điểm bắt đầu đến điểm kết thúc theo hướng chỉ định.
+     */
+    const createPath = (startLocation, endLocation, direction, segmentNumber) => {
+        const path = [];
+        if (direction === 'vertical') {
+            const minY = Math.min(startLocation.y, endLocation.y);
+            const maxY = Math.max(startLocation.y, endLocation.y);
+            for (let y = minY; y <= maxY; y++) {
+                path.push({ x: startLocation.x, y, segmentNumber: segmentNumber });
+            }
+        } else if (direction === 'horizontal') {
+            const minX = Math.min(startLocation.x, endLocation.x);
+            const maxX = Math.max(startLocation.x, endLocation.x);
+            for (let x = minX; x <= maxX; x++) {
+                path.push({ x, y: startLocation.y, segmentNumber: segmentNumber });
+            }
+        }
+        return path;
+    };
+
+    // Mảng các đoạn mê cung được định nghĩa với các thông tin về điểm bắt đầu, điểm kết thúc, hướng và số thứ tự.
+    // Các số 0.2, 0.5,... tương ứng với lấy theo phần trăm của số cột hoặc số dòng
+    const mazeSegments = [
+        {
+            start: { x: 0, y: parseInt(0.2 * columns) },
+            end: { x: parseInt(0.5 * columns), y: parseInt(0.2 * columns) },
+            direction: 'horizontal',
+            segmentNumber: 1,
+        },
+        {
+            start: { x: parseInt(0.5 * columns), y: parseInt(0.2 * columns) - 1 },
+            end: { x: parseInt(0.5 * columns), y: parseInt(0.2 * columns) - 3 },
+            direction: 'vertical',
+            segmentNumber: 2,
+        },
+        {
+            start: { x: parseInt(0.5 * columns), y: parseInt(0.87 * columns) },
+            end: { x: parseInt(0.5 * columns), y: columns - 1 },
+            direction: 'vertical',
+            segmentNumber: 3,
+        },
+        {
+            start: { x: parseInt(0.44 * columns), y: parseInt(0.87 * columns) },
+            end: { x: parseInt(0.8 * columns), y: parseInt(0.87 * columns) },
+            direction: 'horizontal',
+            segmentNumber: 4,
+        },
+        {
+            start: { x: parseInt(0.8 * columns), y: parseInt(0.6 * columns) },
+            end: { x: parseInt(0.8 * columns), y: parseInt(0.87 * columns) },
+            direction: 'vertical',
+            segmentNumber: 5,
+        },
+        {
+            start: { x: parseInt(0.7 * columns), y: 0 },
+            end: { x: parseInt(0.7 * columns), y: parseInt(0.3 * columns) },
+            direction: 'vertical',
+            segmentNumber: 6,
+        },
+        {
+            start: { x: parseInt(0.7 * columns), y: parseInt(0.3 * columns) },
+            end: { x: parseInt(0.9 * columns), y: parseInt(0.3 * columns) },
+            direction: 'horizontal',
+            segmentNumber: 7,
+        },
+        {
+            start: { x: parseInt(0.2 * columns), y: parseInt(0.5 * columns) },
+            end: { x: parseInt(0.2 * columns), y: parseInt(0.7 * columns) },
+            direction: 'vertical',
+            segmentNumber: 8,
+        },
+        {
+            start: { x: parseInt(0.2 * columns), y: parseInt(0.5 * columns) },
+            end: { x: parseInt(0.2 * columns), y: parseInt(0.7 * columns) },
+            direction: 'vertical',
+            segmentNumber: 9,
+        },
+        {
+            start: { x: parseInt(0.1 * columns), y: parseInt(0.7 * columns) },
+            end: { x: parseInt(0.3 * columns), y: parseInt(0.7 * columns) },
+            direction: 'horizontal',
+            segmentNumber: 10,
+        },
+        {
+            start: { x: parseInt(0.3 * columns), y: parseInt(0.7 * columns) },
+            end: { x: parseInt(0.3 * columns), y: parseInt(0.9 * columns) },
+            direction: 'vertical',
+            segmentNumber: 11,
+        },
+        {
+            start: { x: parseInt(0.6 * columns), y: parseInt(0.7 * columns) },
+            end: { x: parseInt(0.75 * columns), y: parseInt(0.7 * columns) },
+            direction: 'horizontal',
+            segmentNumber: 12,
+        },
+    ];
+
+    // Set để lưu trữ các điểm mê cung duy nhất đã được thêm vào.
+    const uniquePoints = new Set();
+
+    // Duyệt qua từng đoạn mê cung và tạo mảng các điểm, loại bỏ các điểm trùng lặp.
+    mazeSegments.forEach(({ start, end, direction, segmentNumber }) => {
+        const path = createPath(start, end, direction, segmentNumber);
+        path.forEach((point) => {
+            const pointKey = `${point.x}-${point.y}`;
+            if (!uniquePoints.has(pointKey)) {
+                uniquePoints.add(pointKey);
+                gameState.maze.push(point);
+            }
+        });
+    });
+
+    drawMaze(enableMaze);
+};
+
+/** Vẽ mê cung trên lưới trò chơi.*/
+const drawMaze = (enableMaze) => {
+    if (enableMaze) {
+        gameState.maze.forEach((maze) => {
+            const locate = getCell(maze.x, maze.y);
+            locate.setAttribute('class', 'barrier');
+            locate.setAttribute('segmentNumber', maze.segmentNumber);
+        });
+    }
+};
+
+/** Loại bỏ mê cung khỏi lưới trò chơi.*/
+const removeMaze = () => {
+    gameState.maze.forEach((maze) => {
+        const locate = getCell(maze.x, maze.y);
+        locate.removeAttribute('class', 'barrier');
+    });
+    gameState.maze.length = 0;
 };
 
 /** Hàm được sử dụng để bắt đầu trò chơi khi trang web được tải hoàn toàn. */
