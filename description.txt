@@ -2,5 +2,12 @@
 2. Khi ăn ngọc được 5 lần thì sẽ xuất 1 viên ngọc to, ăn nó thì được cộng 3 điểm
 3. Chế độ Dễ: Rắn di chuyển chậm, va vào tường sẽ không chết.
 4. Chế độ Trung bình: Rắn di chuyển nhanh hơn, va vào tường sẽ bị chết.
-5. Chế độ Khó: Rắn di chuyển nhanh, va vào tường hoặc các thanh chắn sẽ bị chết.
-6. Sử dụng local storage để lưu điểm số cao nhất và độ khó
+5. Chế độ Khó: Rắn di chuyển nhanh, va vào tường hoặc các thanh chắn sẽ bị chết. 
+    Các thanh chắn sẽ tự động được tạo ở vị trí ngẫu nhiên.
+6. Chế độ Mê cung: Rắn di chuyển trung bình, va vào tường hoặc các bức tường của mê cung sẽ bị chết.
+7. Sử dụng local storage để lưu điểm số cao nhất và độ khó
+8. Mỗi độ khó sẽ có trọng số điểm khác nhau:
+- Dễ: mỗi lần ăn viên ngọc sẽ được +1 điểm
+- Trung bình: mỗi lần ăn viên ngọc sẽ được +2 điểm
+- Khó: mỗi lần ăn viên ngọc sẽ được +4 điểm
+- Mê cung: mỗi lần ăn viên ngọc sẽ được +3 điểm

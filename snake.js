@@ -4,10 +4,11 @@
 // Lớp: DH21DTB
 
 let fps;
-const columns = 36;
-const rows = 36;
+const columns = 40;
+const rows = 40;
 const snakeStartLength = 3;
 let score = 0;
+let weightScore = 0;
 let counter = 0;
 let enableKillBox = false;
 let enableBarrier = false;
@@ -45,7 +46,7 @@ let snake = {
     body: [
         {
             x: columns / 2, // Tọa độ x ban đầu của đầu rắn
-            y: columns / 2, // Tọa độ y ban đầu của đầu rắn
+            y: rows / 2, // Tọa độ y ban đầu của đầu rắn
         },
     ],
     size: snakeStartLength, // Kích thước ban đầu của rắn
@@ -59,7 +60,7 @@ let snake = {
 for (let i = 1; i <= snakeStartLength; i++) {
     snake.body.push({
         x: columns / 2 - i,
-        y: columns / 2,
+        y: rows / 2,
     });
 }
 
@@ -84,7 +85,7 @@ let cells = [];
 /**Hàm tạo lưới trò chơi */
 const createGrid = () => {
     const game = document.getElementById('game');
-    for (let x = 0; x < columns; x++) {
+    for (let x = 0; x < rows; x++) {
         for (let y = 0; y < columns; y++) {
             const element = document.createElement('cell'); // Tạo phần tử cell mới
             element.setAttribute('id', `${y}-${x}`); // Thiết lập id cho ô
@@ -206,7 +207,7 @@ const moveSnake = () => {
             // đặt lại vị trí của đầu rắn ở phía dưới màn hình
             if (enableKillBox) break;
             if (snake.body[0].y < 0) {
-                snake.body[0].y = columns - 1;
+                snake.body[0].y = rows - 1;
             }
             break;
         case directions.DOWN:
@@ -214,7 +215,7 @@ const moveSnake = () => {
             // Nếu không có hộp giết rắn và đầu rắn đi ra ngoài màn hình ở phía dưới,
             // đặt lại vị trí của đầu rắn ở phía trên màn hình
             if (enableKillBox) break;
-            if (snake.body[0].y >= columns) {
+            if (snake.body[0].y >= rows) {
                 snake.body[0].y = 0;
             }
             break;
@@ -323,7 +324,7 @@ const eatGem = () => {
         });
         resetGem();
         // Tăng điểm số của người chơi lên một đơn vị.
-        score += 1;
+        score += weightScore;
         counter += 1;
         if (counter % 5 === 0) {
             createBigGem();
@@ -450,6 +451,13 @@ const checkCollision = () => {
             showOverlay(true);
         }
     });
+
+    gameState.maze.forEach((path) => {
+        // Nếu đầu của con rắn trùng với bức tường của mê cung.
+        if (head.x === path.x && head.y === path.y) {
+            showOverlay(true);
+        }
+    });
 };
 
 /** Hàm được sử dụng để cập nhật điểm số */
@@ -514,23 +522,30 @@ const handleModeChange = () => {
 
     if (mode == 'easy') {
         fps = 7;
+        weightScore = 1;
         toggleKillBox(false);
         enableBarrier = false;
     } else if (mode == 'medium') {
         fps = 10;
+        weightScore = 2;
         toggleKillBox(true);
         enableBarrier = false;
     } else if (mode == 'hard') {
         fps = 15;
+        weightScore = 4;
         toggleKillBox(true);
         enableBarrier = true;
         createBarriers();
     } else if (mode == 'maze') {
         fps = 10;
+        weightScore = 3;
         toggleKillBox(true);
         enableMaze = true;
         createMaze();
     }
+
+    resetGem();
+    draw();
 
     // Khi một mode được chọn, làm cho thẻ select mất focus
     selectMode.blur();
@@ -601,7 +616,7 @@ const createBarriers = () => {
     /**Lọc ra các ô trống trên lưới và không kề với con rắn.*/
     const filterAvailableCells = () => {
         return cells.filter((cell) => {
-            const isInRange = cell.x > 0 && cell.x < columns - 1 && cell.y > 0 && cell.y < columns - 1;
+            const isInRange = cell.x > 0 && cell.x < columns - 1 && cell.y > 0 && cell.y < rows - 1;
             const isNotAdjacentToSnake = !snake.body.some((snakeCell) => {
                 return (
                     (Math.abs(cell.x - snakeCell.x) === 1 && cell.y === snakeCell.y) ||
@@ -647,7 +662,7 @@ const createBarriers = () => {
 
     //Tạo các rào cản trên lưới.
     const barriers = [];
-    for (let i = 0; i < 5; ) {
+    for (let i = 0; i < 8; ) {
         const newBarrier = createBarrier();
         if (i === 0 || checkAcceptableDistance(newBarrier, barriers)) {
             barriers.push(newBarrier);
@@ -710,76 +725,118 @@ const createMaze = () => {
     // Các số 0.2, 0.5,... tương ứng với lấy theo phần trăm của số cột hoặc số dòng
     const mazeSegments = [
         {
-            start: { x: 0, y: parseInt(0.2 * columns) },
-            end: { x: parseInt(0.5 * columns), y: parseInt(0.2 * columns) },
+            start: { x: parseInt(0.1 * columns), y: parseInt(0.15 * rows) },
+            end: { x: parseInt(0.15 * columns), y: parseInt(0.15 * rows) },
             direction: 'horizontal',
             segmentNumber: 1,
         },
         {
-            start: { x: parseInt(0.5 * columns), y: parseInt(0.2 * columns) - 1 },
-            end: { x: parseInt(0.5 * columns), y: parseInt(0.2 * columns) - 3 },
+            start: { x: parseInt(0.1 * columns), y: parseInt(0.15 * rows) },
+            end: { x: parseInt(0.1 * columns), y: parseInt(0.3 * rows) },
             direction: 'vertical',
             segmentNumber: 2,
         },
         {
-            start: { x: parseInt(0.5 * columns), y: parseInt(0.87 * columns) },
-            end: { x: parseInt(0.5 * columns), y: columns - 1 },
-            direction: 'vertical',
+            start: { x: parseInt(0.1 * columns), y: parseInt(0.3 * rows) },
+            end: { x: parseInt(0.35 * columns), y: parseInt(0.3 * rows) },
+            direction: 'horizontal',
             segmentNumber: 3,
         },
         {
-            start: { x: parseInt(0.44 * columns), y: parseInt(0.87 * columns) },
-            end: { x: parseInt(0.8 * columns), y: parseInt(0.87 * columns) },
-            direction: 'horizontal',
+            start: { x: parseInt(0.27 * columns), y: parseInt(0.3 * rows) },
+            end: { x: parseInt(0.27 * columns), y: 0 },
+            direction: 'vertical',
             segmentNumber: 4,
         },
         {
-            start: { x: parseInt(0.8 * columns), y: parseInt(0.6 * columns) },
-            end: { x: parseInt(0.8 * columns), y: parseInt(0.87 * columns) },
+            start: { x: parseInt(0.35 * columns), y: parseInt(0.3 * rows) },
+            end: { x: parseInt(0.35 * columns), y: parseInt(0.55 * rows) },
             direction: 'vertical',
             segmentNumber: 5,
         },
         {
-            start: { x: parseInt(0.7 * columns), y: 0 },
-            end: { x: parseInt(0.7 * columns), y: parseInt(0.3 * columns) },
-            direction: 'vertical',
+            start: { x: parseInt(0.25 * columns), y: parseInt(0.55 * rows) },
+            end: { x: parseInt(0.35 * columns), y: parseInt(0.55 * rows) },
+            direction: 'horizontal',
             segmentNumber: 6,
         },
         {
-            start: { x: parseInt(0.7 * columns), y: parseInt(0.3 * columns) },
-            end: { x: parseInt(0.9 * columns), y: parseInt(0.3 * columns) },
-            direction: 'horizontal',
+            start: { x: parseInt(0.25 * columns), y: parseInt(0.55 * rows) },
+            end: { x: parseInt(0.25 * columns), y: parseInt(0.8 * rows) },
+            direction: 'vertical',
             segmentNumber: 7,
         },
         {
-            start: { x: parseInt(0.2 * columns), y: parseInt(0.5 * columns) },
-            end: { x: parseInt(0.2 * columns), y: parseInt(0.7 * columns) },
-            direction: 'vertical',
+            start: { x: parseInt(0.1 * columns), y: parseInt(0.8 * rows) },
+            end: { x: parseInt(0.25 * columns), y: parseInt(0.8 * rows) },
+            direction: 'horizontal',
             segmentNumber: 8,
         },
         {
-            start: { x: parseInt(0.2 * columns), y: parseInt(0.5 * columns) },
-            end: { x: parseInt(0.2 * columns), y: parseInt(0.7 * columns) },
-            direction: 'vertical',
+            start: { x: 0, y: parseInt(0.57 * rows) },
+            end: { x: parseInt(0.1 * columns), y: parseInt(0.57 * rows) },
+            direction: 'horizontal',
             segmentNumber: 9,
         },
         {
-            start: { x: parseInt(0.1 * columns), y: parseInt(0.7 * columns) },
-            end: { x: parseInt(0.3 * columns), y: parseInt(0.7 * columns) },
-            direction: 'horizontal',
+            start: { x: parseInt(0.4 * columns), y: rows - 1 },
+            end: { x: parseInt(0.4 * columns), y: parseInt(0.8 * rows) },
+            direction: 'vertical',
             segmentNumber: 10,
         },
         {
-            start: { x: parseInt(0.3 * columns), y: parseInt(0.7 * columns) },
-            end: { x: parseInt(0.3 * columns), y: parseInt(0.9 * columns) },
+            start: { x: parseInt(0.7 * columns), y: parseInt(0.85 * rows) },
+            end: { x: parseInt(0.7 * columns), y: rows - 1 },
             direction: 'vertical',
             segmentNumber: 11,
         },
         {
-            start: { x: parseInt(0.6 * columns), y: parseInt(0.7 * columns) },
-            end: { x: parseInt(0.75 * columns), y: parseInt(0.7 * columns) },
+            start: { x: parseInt(0.55 * columns), y: parseInt(0.85 * rows) },
+            end: { x: parseInt(0.85 * columns), y: parseInt(0.85 * rows) },
             direction: 'horizontal',
             segmentNumber: 12,
+        },
+        {
+            start: { x: parseInt(0.55 * columns), y: parseInt(0.7 * rows) },
+            end: { x: parseInt(0.55 * columns), y: parseInt(0.85 * rows) },
+            direction: 'vertical',
+            segmentNumber: 13,
+        },
+        {
+            start: { x: parseInt(0.8 * columns), y: parseInt(0.65 * rows) },
+            end: { x: parseInt(0.8 * columns), y: parseInt(0.85 * rows) },
+            direction: 'vertical',
+            segmentNumber: 14,
+        },
+        {
+            start: { x: parseInt(0.65 * columns), y: parseInt(0.65 * rows) },
+            end: { x: parseInt(0.9 * columns), y: parseInt(0.65 * rows) },
+            direction: 'horizontal',
+            segmentNumber: 15,
+        },
+        {
+            start: { x: parseInt(0.65 * columns), y: parseInt(0.13 * rows) },
+            end: { x: parseInt(0.65 * columns), y: parseInt(0.65 * rows) },
+            direction: 'vertical',
+            segmentNumber: 16,
+        },
+        {
+            start: { x: parseInt(0.5 * columns), y: parseInt(0.13 * rows) },
+            end: { x: parseInt(0.8 * columns), y: parseInt(0.13 * rows) },
+            direction: 'horizontal',
+            segmentNumber: 17,
+        },
+        {
+            start: { x: parseInt(0.85 * columns), y: parseInt(0.3 * rows) },
+            end: { x: columns - 1, y: parseInt(0.3 * rows) },
+            direction: 'horizontal',
+            segmentNumber: 18,
+        },
+        {
+            start: { x: parseInt(0.85 * columns), y: parseInt(0.3 * rows) },
+            end: { x: parseInt(0.85 * columns), y: parseInt(0.45 * rows) },
+            direction: 'vertical',
+            segmentNumber: 19,
         },
     ];
 
