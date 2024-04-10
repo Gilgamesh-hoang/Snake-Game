@@ -356,12 +356,21 @@ const eatBigGem = () => {
 /** Lấy danh sách các ô trống trên lưới. */
 const getAvailableCells = () => {
     return cells.filter((cell) => {
-        // Lọc các ô bị chiếm bởi thân rắn, barrier hoặc viên ngọc.
-        return (
-            !snake.body.some((snakeCell) => snakeCell.x === cell.x && snakeCell.y === cell.y) &&
-            !gameState.barriers.some((barrierCell) => barrierCell.x === cell.x && barrierCell.y === cell.y) &&
-            !(gameState.gem.x === cell.x && gameState.gem.y === cell.y)
+        // Kiểm tra xem ô có chứa phần thân của con rắn không
+        const hasSnake = snake.body.some((snakeCell) => snakeCell.x === cell.x && snakeCell.y === cell.y);
+        // Kiểm tra xem ô có chứa rào cản không
+        const hasBarrier = gameState.barriers.some(
+            (barrierCell) => barrierCell.x === cell.x && barrierCell.y === cell.y,
         );
+        // Kiểm tra xem ô có chứa viên ngọc không
+        const hasGem = gameState.gem && gameState.gem.x === cell.x && gameState.gem.y === cell.y;
+        // Kiểm tra xem ô có chứa viên ngọc đặc biệt không
+        const hasBigGem = gameState.bigGem && gameState.bigGem.x === cell.x && gameState.bigGem.y === cell.y;
+        // Kiểm tra xem ô có chứa đường đi trong mê cung không
+        const hasMaze = gameState.maze.some((path) => path.x === cell.x && path.y === cell.y);
+
+        // Trả về true nếu ô không chứa con rắn, rào cản, viên ngọc, đường đi trong mê cung và viên ngọc đặc biệt (nếu có)
+        return !hasSnake && !hasBarrier && !hasGem && !hasMaze && !(gameState.bigGem && hasBigGem);
     });
 };
 
@@ -819,10 +828,10 @@ const play = () => {
     document.getElementById('selectMode').addEventListener('change', handleModeChange);
     createGrid();
     setListeners();
-    resetGem();
-    draw();
     showRules();
     initializeSelectMode();
+    resetGem();
+    draw();
 };
 
 window.onload = () => play();
